@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:universidad/controllers/login_controller.dart';
 import 'home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -157,7 +158,13 @@ class _SignInScreenState extends State<LoginScreen> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const RegisterScreen()),
+                            );
+                          },
                           child: Text.rich(
                             const TextSpan(
                               text: '¿No tienes cuenta?',
