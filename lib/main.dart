@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     if (token != null && token.isNotEmpty) {
       return const HomeScreen(); // Usuario ya autenticado
     } else {
-      return const SignInScreen(); // Usuario no autenticado
+      return const LoginScreen(); // Usuario no autenticado
     }
   }
 

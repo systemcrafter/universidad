@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController {
   // static const String _baseUrl =
@@ -28,8 +29,15 @@ class LoginController {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final token = data['token'];
+        final user = data['user'];
 
         debugPrint('Token login: $token');
+
+        // Guardar en SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+        await prefs.setString(
+            'user_name', user['name']); // 👈 Aquí guardamos el nombre
 
         return {
           'success': true,

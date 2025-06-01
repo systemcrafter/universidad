@@ -1,16 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:universidad/controllers/logout_controller.dart';
+import 'package:universidad/screens/approved_screen.dart';
+import 'package:universidad/screens/pending_screen.dart';
 import 'login_screen.dart';
+import 'profile_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  Future<void> _handleLogout(BuildContext context) async {
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String userName = '...'; // Valor temporal
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserName();
+  }
+
+  Future<void> loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('user_name') ?? 'Usuario';
+    });
+  }
+
+  Future<void> _handleLogout() async {
     final success = await LogoutController.logout();
     if (success) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const SignInScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -38,8 +62,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFEF7FD),
       appBar: AppBar(
-        title: const Text('Bienvenid@'),
+        title: Text('Hola, $userName 👋'),
         backgroundColor: const Color(0xFF27D1C3),
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -48,29 +73,41 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Image.asset(
-              'assets/images/logo.png',
-              height: 100,
-            ),
+            Image.asset('assets/images/logo.png', height: 100),
             const SizedBox(height: 24),
             _buildButton(
               icon: Icons.person_outline,
               label: 'Información Estudiante',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                );
+              },
             ),
             _buildButton(
               icon: Icons.check_circle_outline,
               label: 'Materias Aprobadas',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ApprovedCourses()),
+                );
+              },
             ),
             _buildButton(
               icon: Icons.pending_actions,
               label: 'Materias Pendientes',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PendingCourses()),
+                );
+              },
             ),
             const Spacer(),
             ElevatedButton.icon(
-              onPressed: () => _handleLogout(context),
+              onPressed: _handleLogout,
               icon: const Icon(Icons.logout),
               label: const Text('Cerrar Sesión'),
               style: ElevatedButton.styleFrom(
