@@ -1,9 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:universidad/controllers/login_controller.dart';
+import 'home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginPage extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
+
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
 
-  LoginPage({super.key});
+  bool _isLoading = false;
+  String? _error;
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    final result = await LoginController.login(
+      email: _emailCtrl.text.trim(),
+      password: _passwordCtrl.text.trim(),
+    );
+
+    setState(() => _isLoading = false);
+
+    if (result['success']) {
+      final token = result['token'];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } else {
+      setState(() => _error = result['message']);
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,83 +66,83 @@ class LoginPage extends StatelessWidget {
               child: Column(
                 children: [
                   SizedBox(height: constraints.maxHeight * 0.1),
-                  Image.network(
-                    "https://i.postimg.cc/nz0YBQcH/Logo-light.png",
+                  Image.asset(
+                    'assets/images/logo.png',
                     height: 100,
                   ),
                   SizedBox(height: constraints.maxHeight * 0.1),
                   Text(
-                    "Sign In",
+                    "Bienvenid@s a la Universidad",
                     style: Theme.of(context)
                         .textTheme
                         .headlineSmall!
                         .copyWith(fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: constraints.maxHeight * 0.05),
+                  if (_error != null)
+                    Text(_error!, style: const TextStyle(color: Colors.red)),
                   Form(
                     key: _formKey,
                     child: Column(
                       children: [
                         TextFormField(
+                          controller: _emailCtrl,
                           decoration: const InputDecoration(
-                            hintText: 'Phone',
+                            hintText: 'Correo',
                             filled: true,
                             fillColor: Color(0xFFF5FCF9),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16.0 * 1.5, vertical: 16.0),
-                            border: const OutlineInputBorder(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 16.0),
+                            border: OutlineInputBorder(
                               borderSide: BorderSide.none,
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50)),
                             ),
                           ),
-                          keyboardType: TextInputType.phone,
-                          onSaved: (phone) {
-                            // Save it
-                          },
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Ingresa tu email' : null,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: TextFormField(
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              hintText: 'Password',
-                              filled: true,
-                              fillColor: Color(0xFFF5FCF9),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0 * 1.5, vertical: 16.0),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(50)),
-                              ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _passwordCtrl,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            hintText: 'Contraseña',
+                            filled: true,
+                            fillColor: Color(0xFFF5FCF9),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 16.0),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
                             ),
-                            onSaved: (passaword) {
-                              // Save it
-                            },
                           ),
+                          validator: (value) =>
+                              value!.isEmpty ? 'Ingresa tu contraseña' : null,
                         ),
+                        const SizedBox(height: 24),
                         ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              // Navigate to the main screen
-                            }
-                          },
+                          onPressed: _isLoading ? null : _handleLogin,
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
-                            backgroundColor: const Color(0xFF00BF6D),
+                            backgroundColor: const Color(0xFF27d1c3),
                             foregroundColor: Colors.white,
                             minimumSize: const Size(double.infinity, 48),
                             shape: const StadiumBorder(),
                           ),
-                          child: const Text("Sign in"),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text("Iniciar sesión"),
                         ),
                         const SizedBox(height: 16.0),
                         TextButton(
                           onPressed: () {},
                           child: Text(
-                            'Forgot Password?',
+                            '¿Olvidaste tu contraseña?',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium!
@@ -109,11 +159,11 @@ class LoginPage extends StatelessWidget {
                           onPressed: () {},
                           child: Text.rich(
                             const TextSpan(
-                              text: "Don’t have an account? ",
+                              text: '¿No tienes cuenta?',
                               children: [
                                 TextSpan(
-                                  text: "Sign Up",
-                                  style: TextStyle(color: Color(0xFF00BF6D)),
+                                  text: " Regístrate",
+                                  style: TextStyle(color: Color(0xff27d1c3)),
                                 ),
                               ],
                             ),
