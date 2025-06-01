@@ -94,6 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
+                  // Validación simple de correo electrónico
                   if (value == null || value.isEmpty) {
                     return 'Ingresa tu correo';
                   }
