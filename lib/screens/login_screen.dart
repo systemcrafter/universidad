@@ -35,6 +35,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
     if (result['success']) {
       final token = result['token'];
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
 

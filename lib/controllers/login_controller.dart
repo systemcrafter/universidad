@@ -27,6 +27,10 @@ class LoginController {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final token = data['token'];
+
+        debugPrint('Token login: $token');
+
         return {
           'success': true,
           'token': data['token'],
